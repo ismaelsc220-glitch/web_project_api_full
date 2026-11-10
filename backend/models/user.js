@@ -1,23 +1,42 @@
+
 const mongoose = require('mongoose');
+const validator = require('validator');
 
 const userSchema = new mongoose.Schema({
+  email: {
+    type: String,
+    required: true,
+    unique: true,
+    validate: {
+      validator: (value) => validator.isEmail(value),
+      message: 'El correo electrónico no es válido',
+    },
+  },
+
+  password: {
+    type: String,
+    required: true,
+  },
+
   name: {
     type: String,
-    required: true,
     minlength: 2,
     maxlength: 30,
+    default: 'Jacques Cousteau',
   },
+
   about: {
     type: String,
-    required: true,
     minlength: 2,
     maxlength: 30,
+    default: 'Explorador',
   },
+
   avatar: {
     type: String,
-    required: true,
+    default: 'https://practicum-content.s3.us-west-1.amazonaws.com/resources/moved_avatar_1604080799.jpg',
     validate: {
-      validator: (v) => /^https?:\/\/(www\.)?[\w-]+\.[\w.-]+[^\s]*$/.test(v),
+      validator: (value) => /^https?:\/\/(www\.)?[\w-]+\.[\w.-]+[^\s]*$/.test(value),
       message: 'Invalid URL format',
     },
   },
