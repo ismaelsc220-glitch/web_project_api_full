@@ -1,0 +1,90 @@
+/* Contenedor del ícono */
+.info-tooltip__icon {
+  width: 120px;
+  height: 120px;
+  margin: 0 auto 32px;
+  position: relative;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+/* Círculo */
+.info-tooltip__icon::before {
+  content: "";
+  position: absolute;
+  width: 116px;
+  height: 116px;
+  border: 2px solid;
+  border-radius: 50%;
+  box-sizing: border-box;
+}
+
+/* Ícono de éxito */
+.info-tooltip__icon_type_success {
+  color: #000;
+}
+
+.info-tooltip__icon_type_success::after {
+  content: "";
+  width: 36px;
+  height: 19px;
+  border-left: 7px solid #000;
+  border-bottom: 7px solid #000;
+  transform: translateY(-5px) rotate(-45deg);
+  box-sizing: border-box;
+}
+
+/* Ícono de error */
+.info-tooltip__icon_type_error {
+  color: #fd0707;
+}
+
+.info-tooltip__icon_type_error::after {
+  content: "×";
+  font-family: Arial, sans-serif;
+  font-size: 75px;
+  font-weight: 300;
+  line-height: 1;
+}
+.info-tooltip {
+  position: fixed;
+  inset: 0;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  background-color: rgba(0, 0, 0, 0.5);
+  z-index: 1000;
+}
+
+.info-tooltip__content {
+  position: relative;
+  box-sizing: border-box;
+  width: 430px;
+  max-width: calc(100% - 40px);
+  padding: 60px 36px;
+  border-radius: 10px;
+  background-color: #fff;
+  color: #000;
+  font-family: Inter, Arial, sans-serif;
+  text-align: center;
+}
+
+.info-tooltip__message {
+  margin: 0;
+  font-size: 24px;
+  font-weight: 900;
+  line-height: 1.2;
+}
+
+.info-tooltip__close {
+  position: absolute;
+  top: -36px;
+  right: 0;
+  padding: 0;
+  border: none;
+  background: transparent;
+  color: #fff;
+  font-size: 32px;
+  cursor: pointer;
+}
