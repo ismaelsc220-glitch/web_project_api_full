@@ -36,8 +36,11 @@ const userSchema = new mongoose.Schema({
     type: String,
     default: 'https://practicum-content.s3.us-west-1.amazonaws.com/resources/moved_avatar_1604080799.jpg',
     validate: {
-      validator: (value) => /^https?:\/\/(www\.)?[\w-]+\.[\w.-]+[^\s]*$/.test(value),
-      message: 'Invalid URL format',
+      validator: (value) => validator.isURL(value, {
+        protocols: ['http', 'https'],
+        require_protocol: true,
+      }),
+      message: 'El formato de la URL no es válido',
     },
   },
 });

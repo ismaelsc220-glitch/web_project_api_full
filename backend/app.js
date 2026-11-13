@@ -1,25 +1,29 @@
+require('dotenv').config();
 const express = require('express');
 const mongoose = require('mongoose');
 const usersRouter = require('./routes/users');
 const cardsRouter = require('./routes/card');
+const auth = require('./middlewares/auth');
 const {
   BAD_REQUEST,
   NOT_FOUND,
   SERVER_ERROR,
   SERVER_ERROR_MESSAGE,
 } = require('./utils/constants');
+const {
+  createUser,
+  login,
+} = require('./controllers/users');
 
 const app = express();
 const PORT = 3000;
 
 app.use(express.json());
 
-app.use((req, res, next) => {
-  req.user = {
-    _id: '6ac41c3e735c18b9fe6dbe16',
-  };
-  next();
-});
+app.post('/signup', createUser);
+app.post('/signin', login);
+
+app.use(auth);
 
 app.use('/users', usersRouter);
 app.use('/cards', cardsRouter);
@@ -38,7 +42,11 @@ app.use((err, req, res, next) => {
 
 mongoose.connect('mongodb://localhost:27017/aroundb')
   .then(() => {
-    app.listen(PORT);
+    console.log('Conexión con MongoDB establecida correctamente');
+
+    app.listen(PORT, () => {
+      console.log(`Servidor ejecutándose en http://localhost:${PORT}`);
+    });
   })
   .catch((err) => {
     console.error('No se pudo conectar a MongoDB:', err.message);
