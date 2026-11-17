@@ -40,10 +40,11 @@ export default function App() {
 
     let active = true;
 
-    auth.checkToken(token)
-      .then(({ data }) => {
+    auth
+      .checkToken(token)
+      .then((user) => {
         if (!active) return;
-        setSession({ token, email: data.email });
+        setSession({ token, email: user.email });
       })
       .catch((error) => {
         if (!active) return;
@@ -85,7 +86,9 @@ export default function App() {
       .catch((error) => {
         if (!active) return;
         console.error(error);
-        setDataError(error.message || "No se pudieron cargar el perfil y las tarjetas.");
+        setDataError(
+          error.message || "No se pudieron cargar el perfil y las tarjetas.",
+        );
       })
       .finally(() => {
         if (active) setIsLoadingData(false);
@@ -103,7 +106,8 @@ export default function App() {
   function handleRegister({ email, password }) {
     setIsSubmitting(true);
 
-    return auth.register({ email, password })
+    return auth
+      .register({ email, password })
       .then(() => {
         setInfoTooltip({
           isOpen: true,
@@ -117,7 +121,8 @@ export default function App() {
         setInfoTooltip({
           isOpen: true,
           isSuccess: false,
-          message: "No se pudo completar el registro. Revisa tus datos e inténtalo de nuevo.",
+          message:
+            "No se pudo completar el registro. Revisa tus datos e inténtalo de nuevo.",
         });
       })
       .finally(() => setIsSubmitting(false));
@@ -126,16 +131,17 @@ export default function App() {
   function handleLogin({ email, password }) {
     setIsSubmitting(true);
 
-    return auth.authorize({ email, password })
+    return auth
+      .authorize({ email, password })
       .then(({ token }) => {
         if (!token) {
           throw new Error("El servidor no devolvió un token.");
         }
 
         // El correo se obtiene del servidor al comprobar el token.
-        return auth.checkToken(token).then(({ data }) => ({
+        return auth.checkToken(token).then((user) => ({
           token,
-          email: data.email,
+          email: user.email,
         }));
       })
       .then((newSession) => {
@@ -150,9 +156,10 @@ export default function App() {
         setInfoTooltip({
           isOpen: true,
           isSuccess: false,
-          message: error.status === 400 || error.status === 401
-            ? "No se pudo iniciar sesión. Revisa tu correo y contraseña."
-            : "No se pudo iniciar sesión. Inténtalo de nuevo en unos momentos.",
+          message:
+            error.status === 400 || error.status === 401
+              ? "No se pudo iniciar sesión. Revisa tu correo y contraseña."
+              : "No se pudo iniciar sesión. Inténtalo de nuevo en unos momentos.",
         });
       })
       .finally(() => setIsSubmitting(false));
@@ -194,25 +201,29 @@ export default function App() {
     });
   }
 
-  function handleCardLike(card) {
-    return api.changeLikeCardStatus(card._id, !card.isLiked)
-      .then((newCard) => {
-        setCards((currentCards) => currentCards.map((item) =>
-          item._id === card._id ? newCard : item,
-        ));
-      })
-      .catch((error) => console.error(error));
-  }
+ function handleCardLike(card, isLiked) {
+  return api.changeLikeCardStatus(card._id, !isLiked)
+    .then((updatedCard) => {
+      setCards((currentCards) => currentCards.map((item) =>
+        item._id === updatedCard._id ? updatedCard : item,
+      ));
+    })
+    .catch((error) => console.error(error));
+}
 
   function handleCardDelete(card) {
     return api.deleteCard(card._id).then(() => {
-      setCards((currentCards) => currentCards.filter((item) => item._id !== card._id));
+      setCards((currentCards) =>
+        currentCards.filter((item) => item._id !== card._id),
+      );
     });
   }
 
   return (
     <div className="page__content">
-      <CurrentUserContext.Provider value={{ currentUser, handleUpdateUser, handleUpdateAvatar }}>
+      <CurrentUserContext.Provider
+        value={{ currentUser, handleUpdateUser, handleUpdateAvatar }}
+      >
         <Header
           isLoggedIn={isLoggedIn}
           email={session?.email ?? ""}
@@ -221,7 +232,9 @@ export default function App() {
 
         {isCheckingToken ? (
           <main className="auth">
-            <p className="auth__text" role="status">Comprobando sesión...</p>
+            <p className="auth__text" role="status">
+              Comprobando sesión...
+            </p>
           </main>
         ) : (
           <Routes>
@@ -231,7 +244,9 @@ export default function App() {
                 <ProtectedRoute isLoggedIn={isLoggedIn}>
                   {isLoadingData ? (
                     <main className="auth">
-                      <p className="auth__text" role="status">Cargando perfil y tarjetas...</p>
+                      <p className="auth__text" role="status">
+                        Cargando perfil y tarjetas...
+                      </p>
                     </main>
                   ) : dataError ? (
                     <main className="auth">
@@ -259,17 +274,31 @@ export default function App() {
             />
             <Route
               path="/signup"
-              element={isLoggedIn ? <Navigate to="/" replace /> : (
-                <Register onRegister={handleRegister} isSubmitting={isSubmitting} />
-              )}
+              element={
+                isLoggedIn ? (
+                  <Navigate to="/" replace />
+                ) : (
+                  <Register
+                    onRegister={handleRegister}
+                    isSubmitting={isSubmitting}
+                  />
+                )
+              }
             />
             <Route
               path="/signin"
-              element={isLoggedIn ? <Navigate to="/" replace /> : (
-                <Login onLogin={handleLogin} isSubmitting={isSubmitting} />
-              )}
+              element={
+                isLoggedIn ? (
+                  <Navigate to="/" replace />
+                ) : (
+                  <Login onLogin={handleLogin} isSubmitting={isSubmitting} />
+                )
+              }
             />
-            <Route path="*" element={<Navigate to={isLoggedIn ? "/" : "/signin"} replace />} />
+            <Route
+              path="*"
+              element={<Navigate to={isLoggedIn ? "/" : "/signin"} replace />}
+            />
           </Routes>
         )}
 

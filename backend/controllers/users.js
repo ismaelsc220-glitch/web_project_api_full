@@ -82,7 +82,7 @@ const login = (req, res) => {
   }
 
 
-  return User.findOne({ email })
+  return User.findOne({ email }).select('+password')
     .then((user) => {
       if (!user || !user.password) {
         return res.status(401).send({
@@ -138,6 +138,10 @@ const getUserById = (req, res) => {
       }
       return res.status(SERVER_ERROR).send({ message: SERVER_ERROR_MESSAGE });
     });
+};
+const getCurrentUser = async (req, res) => {
+  const user = await User.findById(req.user._id).orFail();
+  return res.send(user);
 };
 
 const updateUser = (req, res) => {
@@ -197,6 +201,7 @@ const updateUserAvatar = (req, res) => {
 module.exports = {
   getUsers,
   getUserById,
+  getCurrentUser,
   createUser,
   login,
   updateUser,

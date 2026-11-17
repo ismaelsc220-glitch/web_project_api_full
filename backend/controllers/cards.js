@@ -4,6 +4,7 @@ const {
   NOT_FOUND,
   SERVER_ERROR,
   SERVER_ERROR_MESSAGE,
+  FORBIDDEN,
 } = require('../utils/constants');
 
 const getCards = (req, res) => {
@@ -51,27 +52,58 @@ const createCard = (req, res) => {
     });
 };
 
+
 const deleteCard = (req, res) => {
   const { cardId } = req.params;
 
-  Card.findByIdAndDelete(cardId)
+  Card.findById(cardId)
     .orFail()
     .then((card) => {
-      res.send(card);
+      if (card.owner.toString() !== req.user._id.toString()) {
+        return res.status(FORBIDDEN).send({
+          message: 'No tienes permiso para eliminar esta tarjeta',
+        });
+      }
+
+      return Card.findOneAndDelete({
+        _id: cardId,
+        owner: req.user._id,
+      })
+        .then((deletedCard) => {
+          if (!deletedCard) {
+            return res.status(NOT_FOUND).send({
+              message: 'Tarjeta no encontrada',
+            });
+          }
+
+          return res.send(deletedCard);
+        });
     })
     .catch((err) => {
       if (err.name === 'ValidationError') {
-        return res.status(BAD_REQUEST).send({ message: 'Datos de entrada inválidos' });
+        return res.status(BAD_REQUEST).send({
+          message: 'Datos de entrada inválidos',
+        });
       }
+
       if (err.name === 'CastError') {
-        return res.status(BAD_REQUEST).send({ message: 'ID inválido' });
+        return res.status(BAD_REQUEST).send({
+          message: 'ID inválido',
+        });
       }
+
       if (err.name === 'DocumentNotFoundError') {
-        return res.status(NOT_FOUND).send({ message: 'Recurso no encontrado' });
+        return res.status(NOT_FOUND).send({
+          message: 'Recurso no encontrado',
+        });
       }
-      return res.status(SERVER_ERROR).send({ message: SERVER_ERROR_MESSAGE });
+
+      return res.status(SERVER_ERROR).send({
+        message: SERVER_ERROR_MESSAGE,
+      });
     });
 };
+
 
 const likeCard = (req, res) => {
   const { cardId } = req.params;

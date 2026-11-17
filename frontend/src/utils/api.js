@@ -4,30 +4,30 @@ export class Api {
     this.headers = { ...headers };
   }
 
-  _checkResponse(res) {
-    if (res.ok) return res.json();
+  async _checkResponse(res) {
+  if (res.ok) return res.json();
 
-    const error = new Error(
-      res.status === 401 || res.status === 403
-        ? "La API de Around rechazó su credencial. Revisa VITE_AROUND_API_TOKEN en .env.local."
-        : `La solicitud a Around falló (${res.status}). Inténtalo de nuevo.`,
-    );
-    error.status = res.status;
-    return Promise.reject(error);
+  const body = await res.json().catch(() => null);
+  const error = new Error(body?.message || `La solicitud falló (${res.status}).`);
+  error.status = res.status;
+  throw error;
+}
+
+_request(path, options = {}) {
+  const token = localStorage.getItem("jwt");
+
+  if (!token) {
+    return Promise.reject(new Error("Inicia sesión para continuar."));
   }
 
-  _request(path, options = {}) {
-    if (!this.headers.authorization) {
-      return Promise.reject(new Error(
-        "Configura VITE_AROUND_API_TOKEN en .env.local y reinicia el servidor para cargar el perfil y las tarjetas.",
-      ));
-    }
-
-    return fetch(`${this.baseUrl}${path}`, {
-      ...options,
-      headers: this.headers,
-    }).then(this._checkResponse);
-  }
+  return fetch(`${this.baseUrl}${path}`, {
+    ...options,
+    headers: {
+      ...this.headers,
+      Authorization: `Bearer ${token}`,
+    },
+  }).then(this._checkResponse);
+}
 
   getUserInfo() {
     return this._request("/users/me");
@@ -69,11 +69,9 @@ export class Api {
   }
 }
 
-// El JWT del servicio de autenticación no reemplaza esta credencial de Around.
 const api = new Api({
-  baseUrl: "https://around-api.es.tripleten-services.com/v1",
+  baseUrl: "/api",
   headers: {
-    authorization: "6e7274ec-4c01-409c-bee4-35acba7121f9",
     "Content-Type": "application/json",
   },
 });
