@@ -1,30 +1,31 @@
-
 const jwt = require('jsonwebtoken');
+const HttpError = require('../utils/http-error');
+const { UNAUTHORIZED } = require('../utils/constants');
 
-const JWT_SECRET = process.env.JWT_SECRET;
+const { JWT_SECRET } = require('../utils/config');
 
 const auth = (req, res, next) => {
   const { authorization } = req.headers;
 
   if (!authorization || !authorization.startsWith('Bearer ')) {
-    return res.status(401).send({
-      message: 'Se requiere autorización',
-    });
+    return next(new HttpError(
+      UNAUTHORIZED,
+      'Se requiere autorización',
+    ));
   }
 
-  const token = authorization.replace('Bearer ', '');
+  const token = authorization.slice('Bearer '.length);
 
   try {
-    const payload = jwt.verify(token, JWT_SECRET);
-
-    req.user = payload;
-
-    return next();
+    req.user = jwt.verify(token, JWT_SECRET);
   } catch (err) {
-    return res.status(401).send({
-      message: 'Token inválido o expirado',
-    });
+    return next(new HttpError(
+      UNAUTHORIZED,
+      'Token inválido o expirado',
+    ));
   }
+
+  return next();
 };
 
 module.exports = auth;
