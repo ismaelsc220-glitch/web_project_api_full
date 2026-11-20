@@ -1,5 +1,6 @@
 require('dotenv').config();
 const express = require('express');
+const cors = require('cors');
 const mongoose = require('mongoose');
 const { isCelebrateError } = require('celebrate');
 const usersRouter = require('./routes/users');
@@ -21,6 +22,13 @@ const app = express();
 const PORT = 3000;
 
 app.use(requestLogger);
+app.use(cors({
+  origin: [
+    'https://around-sprint19.ddnsfree.com',
+    'https://www.around-sprint19.ddnsfree.com',
+  ],
+  allowedHeaders: ['Content-Type', 'Authorization'],
+}));
 app.use(express.json());
 
 app.post('/signup', validateSignup, createUser);
