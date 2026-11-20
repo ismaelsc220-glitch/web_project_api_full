@@ -93,4 +93,3 @@ La ruta solo se registra si se configura el token. Después de la revisión, eli
 
 - `frontend/` contiene la interfaz React, los componentes y el cliente de la API.
 - `backend/` contiene Express, los controladores, los modelos y los middlewares.
-- `docs/` contiene la captura de la aplicación.
