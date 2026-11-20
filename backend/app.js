@@ -31,6 +31,21 @@ app.use(cors({
 }));
 app.use(express.json());
 
+const { CRASH_TEST_TOKEN } = process.env;
+
+if (CRASH_TEST_TOKEN) {
+  app.get('/crash-test', (req, res, next) => {
+    if (req.method !== 'GET' || req.get('X-Crash-Test-Token') !== CRASH_TEST_TOKEN) {
+      return next(new HttpError(NOT_FOUND, 'Requested resource not found'));
+    }
+
+    setTimeout(() => {
+      throw new Error('El servidor va a caer');
+    }, 0);
+    return undefined;
+  });
+}
+
 app.post('/signup', validateSignup, createUser);
 app.post('/signin', validateSignin, login);
 
